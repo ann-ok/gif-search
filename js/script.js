@@ -1,9 +1,11 @@
+import config from "../config/config.js";
+
 let data = {
-    api_key: 'tMZbDeHHs2Al1rnckeagj302dXLSlgv0',
+    api_key: config.giphy_apy_key,
     q: 'test'
 };
 
-// fetch('https://api.giphy.com/v1/gifs/search?' + new URLSearchParams(data))
+// fetch(config.giphy_url_search + '?' + new URLSearchParams(data))
 //     .then((data) => {
 //         console.log(data);
 //     });
