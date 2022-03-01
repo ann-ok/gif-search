@@ -1,6 +1,7 @@
 @column-count-s: 2;
 @column-count-m: 6;
 @column-count-l: 12;
+@column-count-lg: 12;
 
 .column-wrapper {
   padding: 0 15px;
@@ -57,3 +58,12 @@ each(range(@column-count-s), {
     }
   })
 }
+
+@media @screen-gt-l {
+  each(range(@column-count-l), {
+    .column_lg-@{value} {
+      width: @column-width-lg * @value;
+    }
+  })
+}
+

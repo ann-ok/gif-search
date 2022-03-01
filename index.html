@@ -19,7 +19,7 @@
         <header class="header">
             <div class="header__content">
                 <a href="#" class="header__logo"><img class="logo" src="images/logo.png" alt="logo"></a>
-                <div class="header__text">Gif search</div>
+                <div class="header__text" id="js-title"></div>
             </div>
         </header>
         <section class="section-content">
@@ -27,20 +27,21 @@
                 <div class="column-row">
                     <div class="column_l-12">
                         <div class="search">
-                            <form  class="search__form" action="">
+                            <form class="search__form" action="" id="gif-search-form">
                                 <label class="search__text" for="gif-search">find GIF <br>by input</label>
-                                <input class="search__input" name="search" placeholder="amazing gif" id="gif-search"/>
-                                <button class="search__button">Search</button>
+                                <input class="search__input" name="search" placeholder="amazing gif" id="gif-search" autocomplete="off"/>
+                                <button class="search__button" type="submit">Search</button>
                             </form>
                         </div>
                     </div>
                 </div>
+                <div class="results" id="results"></div>
             </div>
         </section>
         <footer class="footer">
             <div class="column-wrapper">
                 <div class="column-row">
-                    <div class="column_l-6">&copy; Gif search <script>new Date().getFullYear()</script></div>
+                    <div class="column_l-6" id="js-copyright"></div>
                     <div class="column_l-6">
                          <div class="footer__links">
                              <a target="_blank" href="https://icons8.com/icons">Icons by Icons8</a>
