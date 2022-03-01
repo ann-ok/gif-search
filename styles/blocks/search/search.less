@@ -7,6 +7,8 @@
   width: 80%;
   margin: 0 auto 40px;
 
+  position: relative;
+
   &__form {
     display: grid;
     grid-template-columns: max-content 1fr 0.3fr;
@@ -48,5 +50,33 @@
       background: @color-dark;
       box-shadow: inset 0 0 10px 2px rgba(0, 0, 0, .2);
     }
+  }
+
+  &__suggest {
+    position: absolute;
+    top: 90px;
+  }
+}
+
+.suggest {
+  background-color: #fff;
+  box-shadow: 0 0 10px 2px rgba(0, 0, 0, .1);
+
+  &__item {
+    display: flex;
+    align-items: center;
+    opacity: .7;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 1
+    }
+  }
+
+  &__image {
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+    padding-right: 5px;
   }
 }

@@ -43,9 +43,9 @@ export default class Searcher {
                         reject(error)
                     })
                 }).catch(() => {
-                const text = 'Введите минимум 3 символа'
-                div.innerHTML = `<no-gif-element text="${text}"></no-gif-element>`
-                resolve(div.outerHTML)
+                    const text = 'Введите минимум 3 символа'
+                    div.innerHTML = `<no-gif-element text="${text}"></no-gif-element>`
+                    resolve(div.outerHTML)
             })
         })
     }
@@ -62,7 +62,20 @@ export default class Searcher {
             this._giphy.getTags()
                 .then(response => {
                     const tags = response['data']
-                    return tags
+
+                    if (!tags.length) {
+                        return '';
+                    }
+
+                    const div = document.createElement('div')
+
+                    tags.forEach(element => {
+                        const tag = document.createElement('suggest-element')
+                        tag.setAttribute('text', element.name)
+                        div.append(tag)
+                    })
+
+                    return div.innerHTML
                 }).then(data => {
                 resolve(data)
             }).catch(error => {

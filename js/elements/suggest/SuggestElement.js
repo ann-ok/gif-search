@@ -1,11 +1,10 @@
 export default class GifElement extends HTMLElement {
     connectedCallback() {
-        const url = this.getAttribute('url')
-        const title = this.getAttribute('title')
+        const text = this.getAttribute('text')
 
-        this.innerHTML = `<div class="gif">
-            <img class="gif__image" src="${url}" alt="${title}">
-            <p class="gif__text">${title}</p>
-        </div>`
+        this.innerHTML = `<div class="suggest__item">
+                              <img class="suggest__image" src="images/search.png" alt="Search">
+                              <span>${text}</span>
+                          </div>`
     }
 }
