@@ -1,7 +1,7 @@
 import Searcher from './search/Searcher.js'
 import config from '../config/config.js'
 
-window.onload = () => {
+window.addEventListener('load', () => {
     const searchForm = document.getElementById('gif-search-form')
     const results = document.getElementById('results')
     const searchInput = document.getElementById('gif-search')
@@ -10,7 +10,7 @@ window.onload = () => {
     initApp()
     initSuggest(searchInput.offsetWidth, searchInput.offsetLeft)
 
-    searchForm.onsubmit = (e) => {
+    searchForm.addEventListener('submit', (e) => {
         e.preventDefault()
 
         const formData = new FormData(searchForm)
@@ -22,9 +22,9 @@ window.onload = () => {
         }).catch(error => {
             console.log(error)
         })
-    }
+    })
 
-    searchInput.oninput = (e) => {
+    searchInput.addEventListener('input', (e) => {
         const searcher = new Searcher(e.target.value, 10)
 
         searcher.getTags().then(response => {
@@ -32,23 +32,26 @@ window.onload = () => {
 
             const items = document.querySelectorAll('#search-suggest .suggest__item')
             items.forEach(item => {
-                item.addEventListener('click',() => {
-                    console.log('click')
-                    searchForm.submit()
+                item.addEventListener('mousedown',(e) => {
+                    e.preventDefault()
+                    searchInput.value = item.querySelector('span').innerText
+                    searchForm.querySelector('button[type=submit]').click()
+                    searchInput.blur()
+                    searchInput.dispatchEvent(new Event('input', {bubbles:true}));
                 })
             })
         }).catch(error => {
             console.log(error)
         })
-    }
+    })
 
     searchInput.addEventListener('focusout', () => {
         hideSuggest()
     })
 
-    searchInput.onfocus = () => {
+    searchInput.addEventListener('focusin', () => {
         showSuggest()
-    }
+    })
 
     function initSuggest(width, left) {
         suggest.style.width = width + 'px'
@@ -62,7 +65,7 @@ window.onload = () => {
     function showSuggest() {
         suggest.hidden = false
     }
-}
+})
 
 function initApp() {
     document.title = config.app_name
