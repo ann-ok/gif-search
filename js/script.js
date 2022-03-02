@@ -16,6 +16,7 @@ window.addEventListener('load', () => {
         const formData = new FormData(searchForm)
         const text = formData.get('search')
         const searcher = new Searcher(text)
+        searchInput.blur()
 
         searcher.getResults().then(response => {
             results.innerHTML = response
@@ -36,7 +37,6 @@ window.addEventListener('load', () => {
                     e.preventDefault()
                     searchInput.value = item.querySelector('span').innerText
                     searchForm.querySelector('button[type=submit]').click()
-                    searchInput.blur()
                     searchInput.dispatchEvent(new Event('input', {bubbles:true}));
                 })
             })

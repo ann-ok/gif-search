@@ -8,6 +8,9 @@ customElements.define('no-gif-element', NoGifElement)
 customElements.define('suggest-element', SuggestElement)
 
 export default class Searcher {
+    #tags = 'tags'
+    #maxTagsSuggest = 10
+
     constructor(q, limit = 9, offset = 0) {
         this._giphy = new Giphy(q, limit, offset)
     }
@@ -21,6 +24,7 @@ export default class Searcher {
                 .then(() => {
                     this._giphy.getResults()
                         .then(response => {
+                            this.saveLocalStorageTag(this._giphy.q)
                             const gifs = response.data
 
                             if (!gifs.length) {
@@ -64,16 +68,31 @@ export default class Searcher {
                     const tags = response['data']
 
                     if (!tags.length) {
-                        return '';
+                        return ''
                     }
 
                     const div = document.createElement('div')
 
-                    tags.forEach(element => {
+                    const localStorageTags = this.getLocalStorageTags()
+                    let tagsCount = 0
+
+                    localStorageTags.forEach(element => {
                         const tag = document.createElement('suggest-element')
-                        tag.setAttribute('text', element.name)
+                        tag.setAttribute('text', element)
+                        tag.setAttribute('isStorage', true)
                         div.append(tag)
+                        tagsCount++
                     })
+
+                    for (let i = tagsCount; i <= this.#maxTagsSuggest, i < tags.length; i++) {
+                        const tagText = tags[i].name
+                        if (localStorageTags.includes(tagText)) {
+                            continue;
+                        }
+                        const tag = document.createElement('suggest-element')
+                        tag.setAttribute('text', tags[i].name)
+                        div.append(tag)
+                    }
 
                     return div.innerHTML
                 }).then(data => {
@@ -83,4 +102,30 @@ export default class Searcher {
             })
         })
     }
+
+    saveLocalStorageTag(tag) {
+        const tags = this.getAllLocalStorageTags()
+
+        if (!tags.includes(tag)) {
+            tags.push(tag)
+            localStorage.setItem(this.#tags, JSON.stringify(tags));
+        }
+    }
+
+    getLocalStorageTags() {
+        const tags = this.getAllLocalStorageTags()
+        if (!tags) {
+            return []
+        }
+        const neededTags = tags.filter(tag => tag.startsWith(this._giphy.q))
+        return neededTags.slice(-5, neededTags.length).reverse()
+    }
+
+    getAllLocalStorageTags() {
+        if (localStorage.getItem(this.#tags) === null) {
+            return []
+        }
+        return JSON.parse(localStorage.getItem(this.#tags))
+    }
+
 }

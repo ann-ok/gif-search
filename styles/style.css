@@ -260,6 +260,10 @@ a:visited {
 .suggest__item:hover {
   opacity: 1;
 }
+.suggest__item_storage {
+  color: #483150;
+  font-weight: bold;
+}
 .suggest__image {
   width: 20px;
   height: 20px;
