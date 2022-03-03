@@ -12,96 +12,69 @@ export default class Searcher {
     #maxTagsSuggest = 10
     #maxTagsStorage = 5
 
-    constructor(q, limit = 9, offset = 0) {
-        this._giphy = new Giphy(q, limit, offset)
+    constructor(query, limit = 9, offset = 0) {
+        this._giphy = new Giphy(query, limit, offset)
     }
 
-    getResults() {
-        return new Promise((resolve, reject) => {
-            const div = document.createElement('div')
-            div.classList.add('column-row')
+    getResults = async () => {
+        const div = document.createElement('div')
+        div.classList.add('column-row')
 
-            this.checkQuery(this._giphy.q)
-                .then(() => {
-                    this._giphy.getResults()
-                        .then(response => {
-                            this.saveLocalStorageTag(this._giphy.q)
-                            const gifs = response.data
+        if (this._giphy.query.length < 3) {
+            const text = 'Введите минимум 3 символа'
+            div.innerHTML = `<no-gif-element text="${text}"></no-gif-element>`
+            return div.outerHTML
+        }
 
-                            if (!gifs.length) {
-                                const text = 'Результаты не найдены'
-                                div.innerHTML = `<no-gif-element text="${text}"></no-gif-element>`
-                                return div.outerHTML
-                            }
+        const response = await this._giphy.getResults()
+        const gifs = response.data
 
-                            gifs.forEach(element => {
-                                const gif = document.createElement('div')
-                                gif.classList.add('column_l-4')
-                                gif.innerHTML = `<gif-element url="${element.images.original.url}" title="${element.title}"></gif-element>`
-                                div.append(gif)
-                            })
+        if (!gifs.length) {
+            const text = 'Результаты не найдены'
+            div.innerHTML = `<no-gif-element text="${text}"></no-gif-element>`
+            return div.outerHTML
+        }
 
-                            return div.outerHTML
-                        }).then(data => {
-                        resolve(data)
-                    }).catch(error => {
-                        reject(error)
-                    })
-                }).catch(() => {
-                    const text = 'Введите минимум 3 символа'
-                    div.innerHTML = `<no-gif-element text="${text}"></no-gif-element>`
-                    resolve(div.outerHTML)
-            })
+        gifs.forEach(element => {
+            const gif = document.createElement('div')
+            gif.classList.add('column_l-4')
+            gif.innerHTML = `<gif-element url="${element.images.original.url}" title="${element.title}"></gif-element>`
+            div.append(gif)
         })
+
+        this.saveLocalStorageTag(this._giphy.query)
+
+        return div.outerHTML
     }
 
-    checkQuery(q) {
-        return new Promise((resolve, reject) => {
-            if (q.length < 3) reject()
-            resolve()
+    getTags = async() => {
+        const response = await this._giphy.getTags()
+        const tags = response['data']
+
+        if (!tags.length) {
+            return ''
+        }
+
+        const div = document.createElement('div')
+        const localStorageTags = this.getLocalStorageTags()
+
+        localStorageTags.forEach(element => {
+            const tag = document.createElement('suggest-element')
+            tag.setAttribute('text', element)
+            tag.setAttribute('isStorage', true)
+            div.append(tag)
         })
-    }
 
-    getTags() {
-        return new Promise((resolve, reject) => {
-            this._giphy.getTags()
-                .then(response => {
-                    const tags = response['data']
+        for (let i = localStorageTags.length; i <= this.#maxTagsSuggest, i < tags.length; i++) {
+            if (localStorageTags.includes(tags[i].name)) {
+                continue
+            }
+            const tag = document.createElement('suggest-element')
+            tag.setAttribute('text', tags[i].name)
+            div.append(tag)
+        }
 
-                    if (!tags.length) {
-                        return ''
-                    }
-
-                    const div = document.createElement('div')
-
-                    const localStorageTags = this.getLocalStorageTags()
-                    let tagsCount = 0
-
-                    localStorageTags.forEach(element => {
-                        const tag = document.createElement('suggest-element')
-                        tag.setAttribute('text', element)
-                        tag.setAttribute('isStorage', true)
-                        div.append(tag)
-                        tagsCount++
-                    })
-
-                    for (let i = tagsCount; i <= this.#maxTagsSuggest, i < tags.length; i++) {
-                        const tagText = tags[i].name
-                        if (localStorageTags.includes(tagText)) {
-                            continue;
-                        }
-                        const tag = document.createElement('suggest-element')
-                        tag.setAttribute('text', tags[i].name)
-                        div.append(tag)
-                    }
-
-                    return div.innerHTML
-                }).then(data => {
-                resolve(data)
-            }).catch(error => {
-                reject(error)
-            })
-        })
+        return div.innerHTML
     }
 
     saveLocalStorageTag(tag) {
@@ -119,7 +92,7 @@ export default class Searcher {
             return []
         }
 
-        let neededTags = tags.filter(tag => tag.startsWith(this._giphy.q))
+        let neededTags = tags.filter(tag => tag.startsWith(this._giphy.query))
         if (neededTags.length > this.#maxTagsSuggest) {
             neededTags = neededTags.slice(-this.#maxTagsSuggest, neededTags.length)
         }

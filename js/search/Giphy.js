@@ -9,31 +9,22 @@ export default class Giphy {
         this._offset = offset
     }
 
-    get q() {
+    get query() {
         return this._q
     }
 
-    getResults() {
+    getResults = async () => {
         return this.sendRequest(config.giphy_url_search)
     }
 
-    getTags() {
+    getTags = async () => {
         return this.sendRequest(config.giphy_url_autocomplete)
     }
 
-    sendRequest(url) {
-        return new Promise((resolve, reject) => {
-            const data = this.getData()
-
-            fetch(url + '?' + new URLSearchParams(data))
-                .then(response => {
-                    return response.json()
-                }).then(data => {
-                resolve(data)
-            }).catch(error => {
-                reject(error)
-            })
-        })
+    sendRequest = async (url) => {
+        const data = this.getData()
+        const response = await fetch(url + '?' + new URLSearchParams(data));
+        return response.json()
     }
 
     /**

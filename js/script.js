@@ -1,5 +1,5 @@
 import Searcher from './search/Searcher.js'
-import Store from "./search/Store.js";
+import SearchHistory from "./search/SearchHistory.js";
 import config from '../config/config.js'
 
 
@@ -9,7 +9,7 @@ window.addEventListener('load', () => {
     const searchInput = document.getElementById('gif-search')
     const suggest = document.getElementById('search-suggest');
 
-    const store = new Store('search-history');
+    const store = new SearchHistory('search-history');
 
     initApp()
     initSuggest(searchInput.offsetWidth, searchInput.offsetLeft)
@@ -23,7 +23,7 @@ window.addEventListener('load', () => {
         }
     });
 
-    searchForm.addEventListener('submit', (e) => {
+    searchForm.addEventListener('submit', async (e) => {
         e.preventDefault()
 
         const formData = new FormData(searchForm)
@@ -31,35 +31,25 @@ window.addEventListener('load', () => {
         const searcher = new Searcher(text)
         updateStore(text)
 
-        searcher.getResults().then(response => {
-            results.innerHTML = response
+        try {
+            console.log('getResults')
+            results.innerHTML = await searcher.getResults()
             searchInput.blur()
-        }).catch(error => {
+            await updateTags(searcher, false)
+        } catch (error) {
             console.log(error)
-        })
+        }
     })
 
-    searchInput.addEventListener('input', (e) => {
+    searchInput.addEventListener('input', async (e) => {
         const word = e.target.value
         const searcher = new Searcher(word, 10)
 
-        searcher.getTags().then(response => {
-            suggest.innerHTML = response
-
-            const items = document.querySelectorAll('#search-suggest .suggest__item')
-            items.forEach(item => {
-                item.addEventListener('mousedown',(e) => {
-                    e.preventDefault()
-                    searchInput.value = item.querySelector('span').innerText
-                    searchForm.querySelector('button[type=submit]').click()
-                    searchInput.dispatchEvent(new Event('input', {bubbles:true}))
-                })
-            })
-
-            showSuggest()
-        }).catch(error => {
+        try {
+            await updateTags(searcher)
+        } catch (error) {
             console.log(error)
-        })
+        }
     })
 
     searchInput.addEventListener('focusout', () => {
@@ -95,12 +85,29 @@ window.addEventListener('load', () => {
 
         const items = document.querySelectorAll('#search-history__items div')
         items.forEach(item => {
-            item.addEventListener('click',(e) => {
+            item.onclick = () => {
                 searchInput.value = item.innerText
                 searchForm.querySelector('button[type=submit]').click()
-                searchInput.dispatchEvent(new Event('input', {bubbles:true}))
-            })
+            }
         })
+    }
+
+    async function updateTags(searcher, isShowSuggest = true) {
+        suggest.innerHTML = await searcher.getTags()
+
+        const items = document.querySelectorAll('#search-suggest .suggest__item')
+        items.forEach(item => {
+            item.onmousedown = (e) => {
+                e.preventDefault()
+                searchInput.value = item.querySelector('span').innerText
+                searchForm.querySelector('button[type=submit]').click()
+                searchInput.dispatchEvent(new Event('input', {bubbles: true}))
+            }
+        })
+
+        if (isShowSuggest) {
+            showSuggest()
+        }
     }
 })
 

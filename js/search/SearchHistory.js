@@ -1,4 +1,4 @@
-export default class Store {
+export default class SearchHistory {
     #maxCount = 3
     #localStorageKey = 'search-history'
 
