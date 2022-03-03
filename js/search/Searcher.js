@@ -10,6 +10,7 @@ customElements.define('suggest-element', SuggestElement)
 export default class Searcher {
     #tags = 'tags'
     #maxTagsSuggest = 10
+    #maxTagsStorage = 5
 
     constructor(q, limit = 9, offset = 0) {
         this._giphy = new Giphy(q, limit, offset)
@@ -20,7 +21,7 @@ export default class Searcher {
             const div = document.createElement('div')
             div.classList.add('column-row')
 
-            this.checkQ(this._giphy.q)
+            this.checkQuery(this._giphy.q)
                 .then(() => {
                     this._giphy.getResults()
                         .then(response => {
@@ -54,7 +55,7 @@ export default class Searcher {
         })
     }
 
-    checkQ(q) {
+    checkQuery(q) {
         return new Promise((resolve, reject) => {
             if (q.length < 3) reject()
             resolve()
@@ -104,11 +105,11 @@ export default class Searcher {
     }
 
     saveLocalStorageTag(tag) {
-        const tags = this.getAllLocalStorageTags()
+        let tags = this.getAllLocalStorageTags()
 
         if (!tags.includes(tag)) {
             tags.push(tag)
-            localStorage.setItem(this.#tags, JSON.stringify(tags));
+            localStorage.setItem(this.#tags, JSON.stringify(tags))
         }
     }
 
@@ -117,8 +118,13 @@ export default class Searcher {
         if (!tags) {
             return []
         }
-        const neededTags = tags.filter(tag => tag.startsWith(this._giphy.q))
-        return neededTags.slice(-5, neededTags.length).reverse()
+
+        let neededTags = tags.filter(tag => tag.startsWith(this._giphy.q))
+        if (neededTags.length > this.#maxTagsSuggest) {
+            neededTags = neededTags.slice(-this.#maxTagsSuggest, neededTags.length)
+        }
+
+        return neededTags.slice(-this.#maxTagsStorage, neededTags.length).reverse()
     }
 
     getAllLocalStorageTags() {
@@ -127,5 +133,4 @@ export default class Searcher {
         }
         return JSON.parse(localStorage.getItem(this.#tags))
     }
-
 }

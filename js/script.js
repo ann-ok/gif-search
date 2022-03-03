@@ -1,5 +1,7 @@
 import Searcher from './search/Searcher.js'
+import Store from "./search/Store.js";
 import config from '../config/config.js'
+
 
 window.addEventListener('load', () => {
     const searchForm = document.getElementById('gif-search-form')
@@ -7,8 +9,19 @@ window.addEventListener('load', () => {
     const searchInput = document.getElementById('gif-search')
     const suggest = document.getElementById('search-suggest');
 
+    const store = new Store('search-history');
+
     initApp()
     initSuggest(searchInput.offsetWidth, searchInput.offsetLeft)
+    updateStore()
+
+    // Событие не работает на вкладке, которая вносит изменения, но срабатывает на остальных вкладках домена в браузере
+    window.addEventListener('storage', function(event) {
+        if (event.key === store.getStorageKey()) {
+            store.updateItems()
+            updateStore()
+        }
+    });
 
     searchForm.addEventListener('submit', (e) => {
         e.preventDefault()
@@ -16,17 +29,19 @@ window.addEventListener('load', () => {
         const formData = new FormData(searchForm)
         const text = formData.get('search')
         const searcher = new Searcher(text)
-        searchInput.blur()
+        updateStore(text)
 
         searcher.getResults().then(response => {
             results.innerHTML = response
+            searchInput.blur()
         }).catch(error => {
             console.log(error)
         })
     })
 
     searchInput.addEventListener('input', (e) => {
-        const searcher = new Searcher(e.target.value, 10)
+        const word = e.target.value
+        const searcher = new Searcher(word, 10)
 
         searcher.getTags().then(response => {
             suggest.innerHTML = response
@@ -37,9 +52,11 @@ window.addEventListener('load', () => {
                     e.preventDefault()
                     searchInput.value = item.querySelector('span').innerText
                     searchForm.querySelector('button[type=submit]').click()
-                    searchInput.dispatchEvent(new Event('input', {bubbles:true}));
+                    searchInput.dispatchEvent(new Event('input', {bubbles:true}))
                 })
             })
+
+            showSuggest()
         }).catch(error => {
             console.log(error)
         })
@@ -56,6 +73,7 @@ window.addEventListener('load', () => {
     function initSuggest(width, left) {
         suggest.style.width = width + 'px'
         suggest.style.left = left + 'px'
+        hideSuggest()
     }
 
     function hideSuggest() {
@@ -63,7 +81,26 @@ window.addEventListener('load', () => {
     }
 
     function showSuggest() {
-        suggest.hidden = false
+        if (suggest.innerHTML) {
+            suggest.hidden = false
+        } else {
+            hideSuggest()
+        }
+    }
+
+    function updateStore(word = '') {
+        if (word) {
+            store.setWord(word)
+        }
+
+        const items = document.querySelectorAll('#search-history__items div')
+        items.forEach(item => {
+            item.addEventListener('click',(e) => {
+                searchInput.value = item.innerText
+                searchForm.querySelector('button[type=submit]').click()
+                searchInput.dispatchEvent(new Event('input', {bubbles:true}))
+            })
+        })
     }
 })
 
